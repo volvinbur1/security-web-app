@@ -1,37 +1,25 @@
 package main
 
 import (
-	"fmt"
-	"github.com/volvinbur1/security-web-app/internal/auth"
-	"github.com/volvinbur1/security-web-app/internal/cmn"
-	"github.com/volvinbur1/security-web-app/internal/db"
+	"github.com/volvinbur1/security-web-app/internal/routing"
+	"log"
+	"net/http"
 )
 
 func main() {
-	dbManager := db.New()
-	defer dbManager.Disconnect()
+	router := http.NewServeMux()
+	routes(router)
 
-	usr := cmn.User{
-		Login:    "test1",
-		Name:     "test1",
-		Surname:  "test1",
-		Password: "test123445678",
-	}
-	err := auth.Register(dbManager, usr)
+	err := http.ListenAndServe(":8080", router)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
+}
 
-	users, err := dbManager.GetUsers()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(users)
+func routes(mux *http.ServeMux) {
+	mux.HandleFunc("/registration", routing.RegisterPage)
+	mux.HandleFunc("/login", routing.LoginPage)
 
-	err = auth.LoginUser(dbManager, usr)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("user validated")
+	fs := http.FileServer(http.Dir("./web/app/static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
 }

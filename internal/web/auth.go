@@ -1,6 +1,7 @@
 package web
 
 import (
+	"bufio"
 	"crypto/rand"
 	"crypto/sha1"
 	"encoding/hex"
@@ -14,6 +15,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 )
 
 const saltSize = 16
@@ -148,4 +150,24 @@ func storeUserKey(guid, key string) error {
 		return err
 	}
 	return nil
+}
+
+func getUserKey(guid string) (string, error) {
+	f, err := os.OpenFile(keysFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		scannedGuid := strings.Split(scanner.Text(), ";")[0]
+		if scannedGuid != guid {
+			continue
+		}
+
+		return strings.Split(scanner.Text(), ";")[1], err
+	}
+
+	return "", errors.New("key for user with such guid not found")
 }

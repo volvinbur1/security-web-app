@@ -2,10 +2,10 @@ package web
 
 import (
 	"fmt"
-	"github.com/volvinbur1/security-web-app/internal/auth"
 	"github.com/volvinbur1/security-web-app/internal/cmn"
 	"github.com/volvinbur1/security-web-app/internal/db"
 	"github.com/volvinbur1/security-web-app/internal/routing"
+	"github.com/volvinbur1/security-web-app/internal/web/auth"
 	"log"
 	"net/http"
 )

@@ -10,6 +10,7 @@ import (
 	"github.com/volvinbur1/security-web-app/internal/db"
 	"golang.org/x/crypto/bcrypt"
 	"io"
+	"log"
 	"os"
 	"unicode"
 )
@@ -22,17 +23,18 @@ func LoginUser(dbMgr *db.Manager, loggingUser cmn.User) error {
 		return err
 	}
 
-	for _, user := range users {
-		if user.Login == loggingUser.Login {
-			pwdBytes, err := hex.DecodeString(user.Password)
+	for _, u := range users {
+		if u.Login == loggingUser.Login {
+			pwdBytes, err := hex.DecodeString(u.Password)
 			if err != nil {
 				return err
 			}
 
-			if bcrypt.CompareHashAndPassword(pwdBytes, []byte(user.PwdSalt+loggingUser.Login)) != nil {
+			if bcrypt.CompareHashAndPassword(pwdBytes, []byte(u.PwdSalt+loggingUser.Login)) != nil {
 				return errors.New("password incorrect")
 			}
 
+			log.Println(loggingUser.Login, "logged in.")
 			return nil
 		}
 	}
@@ -57,15 +59,23 @@ func Register(dbMgr *db.Manager, newUser cmn.User) error {
 		return err
 	}
 
-	newUser.PwdSalt = hex.EncodeToString(genSalt([]byte(newUser.Password)))
-	newUser.Password = newUser.PwdSalt + newUser.Password
-	hash, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), 10)
+	err = hashPassword(&newUser)
 	if err != nil {
 		return err
 	}
 
-	newUser.Password = hex.EncodeToString(hash)
-	return dbMgr.AddUser(newUser)
+	err = encryptUserData(&newUser)
+	if err != nil {
+		return err
+	}
+
+	err = dbMgr.AddUser(newUser)
+	if err != nil {
+		return err
+	}
+
+	log.Println(newUser.Login, "registered in.")
+	return nil
 }
 
 func preValidatePassword(password string) error {
@@ -120,4 +130,20 @@ func genSalt(password []byte) []byte {
 	hash.Write(buf)
 	hash.Write(password)
 	return hash.Sum(buf)
+}
+
+func hashPassword(user *cmn.User) error {
+	user.PwdSalt = hex.EncodeToString(genSalt([]byte(user.Password)))
+	user.Password = user.PwdSalt + user.Password
+	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+	if err != nil {
+		return err
+	}
+
+	user.Password = hex.EncodeToString(hash)
+	return nil
+}
+
+func encryptUserData(user *cmn.User) error {
+	return nil
 }

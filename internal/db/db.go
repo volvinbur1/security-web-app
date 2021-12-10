@@ -2,6 +2,9 @@ package db
 
 import (
 	"context"
+	"errors"
+	"github.com/volvinbur1/security-web-app/internal/cmn"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
@@ -36,6 +39,74 @@ func (m *Manager) Disconnect() {
 	}
 }
 
-func (m *Manager) AddUser() error {
+func (m *Manager) AddUser(user cmn.User) error {
+	dataBase := m.client.Database("secapp")
+	authTable := dataBase.Collection("auth")
+
+	_, err := authTable.InsertOne(m.ctx, bson.D{{Key: "login", Value: user.Login},
+		{Key: "name", Value: user.Name}, {Key: "surname", Value: user.Surname},
+		{Key: "pwdhash", Value: user.Password}, {Key: "pwdsalt", Value: user.PwdSalt},
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (m *Manager) GetUsers() ([]cmn.User, error) {
+	dataBase := m.client.Database("secapp")
+	authTable := dataBase.Collection("auth")
+
+	cursor, err := authTable.Find(m.ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	var usersBson []bson.M
+	if err = cursor.All(m.ctx, &usersBson); err != nil {
+		return nil, err
+	}
+
+	var users []cmn.User
+	for i := 0; i < len(usersBson); i++ {
+		user, err := parseBson(usersBson[i])
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+func parseBson(data bson.M) (cmn.User, error) {
+	u := cmn.User{}
+	isOkay := true
+	u.Name, isOkay = data["name"].(string)
+	if !isOkay {
+		return cmn.User{}, errors.New("error when parsing bson value `name`")
+	}
+
+	u.Surname, isOkay = data["surname"].(string)
+	if !isOkay {
+		return cmn.User{}, errors.New("error when parsing bson value `surname`")
+	}
+
+	u.Login, isOkay = data["login"].(string)
+	if !isOkay {
+		return cmn.User{}, errors.New("error when parsing bson value `login`")
+	}
+
+	u.Password, isOkay = data["pwdhash"].(string)
+	if !isOkay {
+		return cmn.User{}, errors.New("error when parsing bson value `pwdhash`")
+	}
+
+	u.PwdSalt, isOkay = data["pwdsalt"].(string)
+	if !isOkay {
+		return cmn.User{}, errors.New("error when parsing bson value `pwdsalt`")
+	}
+
+	return cmn.User{}, nil
 }

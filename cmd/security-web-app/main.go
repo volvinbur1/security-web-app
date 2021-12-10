@@ -11,7 +11,7 @@ func main() {
 	router := http.NewServeMux()
 	routes(router, webWorker)
 
-	err := http.ListenAndServe(":4040", router)
+	err := http.ListenAndServe(":8080", router)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -20,7 +20,7 @@ func main() {
 func routes(mux *http.ServeMux, worker *web.Worker) {
 	mux.HandleFunc("/registration", worker.RegistrationHandler)
 	mux.HandleFunc("/login", worker.LoginHandler)
-	mux.HandleFunc("/gallery", worker.GalleryPage)
+	mux.HandleFunc("/gallery", worker.GalleryHandler)
 
 	fs := http.FileServer(http.Dir("./web/app/static"))
 	mux.Handle("/static/", http.StripPrefix("/static", fs))

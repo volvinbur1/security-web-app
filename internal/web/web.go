@@ -44,7 +44,8 @@ func (w *Worker) RegistrationHandler(rw http.ResponseWriter, req *http.Request) 
 		if err != nil {
 			fmt.Fprintf(rw, err.Error())
 		} else {
-			fmt.Fprintf(rw, "User registered")
+			//fmt.Fprintf(rw, "User registered")
+			http.Redirect(rw, req, "/login", 301)
 		}
 	}
 }
@@ -66,11 +67,11 @@ func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			fmt.Fprintf(rw, err.Error())
 		} else {
-			http.Redirect(rw, req, "/gallery", http.StatusOK)
+			//http.Redirect(rw, req, "/gallery", http.StatusMovedPermanently)
 		}
 	}
 }
-func (w *Worker) GalleryPage(rw http.ResponseWriter, req *http.Request) {
+func (w *Worker) GalleryHandler(rw http.ResponseWriter, req *http.Request) {
 	path := filepath.Join("web", "app", "html", "galleryPage.html")
 	tmpl, err := template.ParseFiles(path)
 
@@ -78,6 +79,7 @@ func (w *Worker) GalleryPage(rw http.ResponseWriter, req *http.Request) {
 		http.Error(rw, err.Error(), 400)
 		return
 	}
+
 	type Qwe struct {
 		Name     string
 		Lastname string

@@ -12,17 +12,16 @@ import (
 )
 
 type Manager struct {
-	ctx       context.Context
-	ctxCancel context.CancelFunc
-	client    *mongo.Client
+	client *mongo.Client
 }
 
 func New() *Manager {
 	m := &Manager{}
-	m.ctx, m.ctxCancel = context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer ctxCancel()
 
 	var err error
-	m.client, err = mongo.Connect(m.ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	m.client, err = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,18 +31,21 @@ func New() *Manager {
 
 // Disconnect should be called before Manager release
 func (m *Manager) Disconnect() {
-	defer m.ctxCancel()
-	err := m.client.Disconnect(m.ctx)
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer ctxCancel()
+
+	err := m.client.Disconnect(ctx)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func (m *Manager) AddUser(user cmn.User) error {
-	dataBase := m.client.Database("secapp")
-	authTable := dataBase.Collection("users")
+	authTable := m.client.Database("secapp").Collection("users")
 
-	_, err := authTable.InsertOne(m.ctx, bson.D{{Key: "login", Value: user.Login},
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer ctxCancel()
+	_, err := authTable.InsertOne(ctx, bson.D{{Key: "login", Value: user.Login},
 		{Key: "name", Value: user.Name}, {Key: "surname", Value: user.Surname},
 		{Key: "pwdhash", Value: user.Password}, {Key: "pwdsalt", Value: user.PwdSalt},
 	})
@@ -55,16 +57,18 @@ func (m *Manager) AddUser(user cmn.User) error {
 }
 
 func (m *Manager) GetUsers() ([]cmn.User, error) {
-	dataBase := m.client.Database("secapp")
-	authTable := dataBase.Collection("users")
+	authTable := m.client.Database("secapp").Collection("users")
 
-	cursor, err := authTable.Find(m.ctx, bson.M{})
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer ctxCancel()
+
+	cursor, err := authTable.Find(ctx, bson.M{})
 	if err != nil {
 		return nil, err
 	}
 
 	var usersBson []bson.M
-	if err = cursor.All(m.ctx, &usersBson); err != nil {
+	if err = cursor.All(ctx, &usersBson); err != nil {
 		return nil, err
 	}
 

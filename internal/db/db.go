@@ -22,7 +22,7 @@ func New() *Manager {
 	m.ctx, m.ctxCancel = context.WithTimeout(context.Background(), 10*time.Second)
 
 	var err error
-	m.client, err = mongo.Connect(m.ctx, options.Client().ApplyURI("mongodb://localhost:21017"))
+	m.client, err = mongo.Connect(m.ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -41,7 +41,7 @@ func (m *Manager) Disconnect() {
 
 func (m *Manager) AddUser(user cmn.User) error {
 	dataBase := m.client.Database("secapp")
-	authTable := dataBase.Collection("auth")
+	authTable := dataBase.Collection("users")
 
 	_, err := authTable.InsertOne(m.ctx, bson.D{{Key: "login", Value: user.Login},
 		{Key: "name", Value: user.Name}, {Key: "surname", Value: user.Surname},
@@ -56,7 +56,7 @@ func (m *Manager) AddUser(user cmn.User) error {
 
 func (m *Manager) GetUsers() ([]cmn.User, error) {
 	dataBase := m.client.Database("secapp")
-	authTable := dataBase.Collection("auth")
+	authTable := dataBase.Collection("users")
 
 	cursor, err := authTable.Find(m.ctx, bson.M{})
 	if err != nil {
@@ -72,7 +72,7 @@ func (m *Manager) GetUsers() ([]cmn.User, error) {
 	for i := 0; i < len(usersBson); i++ {
 		user, err := parseBson(usersBson[i])
 		if err != nil {
-			return nil, err
+			continue
 		}
 		users = append(users, user)
 	}
@@ -108,5 +108,5 @@ func parseBson(data bson.M) (cmn.User, error) {
 		return cmn.User{}, errors.New("error when parsing bson value `pwdsalt`")
 	}
 
-	return cmn.User{}, nil
+	return u, nil
 }

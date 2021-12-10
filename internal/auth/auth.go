@@ -3,6 +3,7 @@ package auth
 import (
 	"crypto/rand"
 	"crypto/sha1"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/volvinbur1/security-web-app/internal/cmn"
@@ -13,6 +14,30 @@ import (
 )
 
 const saltSize = 16
+
+func LoginUser(dbMgr *db.Manager, loggingUser cmn.User) error {
+	users, err := dbMgr.GetUsers()
+	if err != nil {
+		return err
+	}
+
+	for _, user := range users {
+		if user.Login == loggingUser.Login {
+			pwdBytes, err := hex.DecodeString(user.Password)
+			if err != nil {
+				return err
+			}
+
+			if bcrypt.CompareHashAndPassword(pwdBytes, []byte(user.PwdSalt+loggingUser.Login)) != nil {
+				return errors.New("password incorrect")
+			}
+
+			return nil
+		}
+	}
+
+	return errors.New("user not registered")
+}
 
 func Register(dbMgr *db.Manager, newUser cmn.User) error {
 	users, err := dbMgr.GetUsers()
@@ -31,14 +56,14 @@ func Register(dbMgr *db.Manager, newUser cmn.User) error {
 		return err
 	}
 
-	newUser.PwdSalt = string(genSalt([]byte(newUser.Password)))
+	newUser.PwdSalt = hex.EncodeToString(genSalt([]byte(newUser.Password)))
 	newUser.Password = newUser.PwdSalt + newUser.Password
 	hash, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), 10)
 	if err != nil {
 		return err
 	}
 
-	newUser.Password = string(hash)
+	newUser.Password = hex.EncodeToString(hash)
 	return dbMgr.AddUser(newUser)
 }
 

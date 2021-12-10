@@ -12,7 +12,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"unicode"
 )
 
 const saltSize = 16
@@ -54,10 +53,10 @@ func Register(dbMgr *db.Manager, newUser cmn.User) error {
 		}
 	}
 
-	err = preValidatePassword(newUser.Password)
-	if err != nil {
-		return err
-	}
+	//err = preValidatePassword(newUser.Password)
+	//if err != nil {
+	//	return err
+	//}
 
 	err = hashPassword(&newUser)
 	if err != nil {
@@ -76,45 +75,6 @@ func Register(dbMgr *db.Manager, newUser cmn.User) error {
 
 	log.Println(newUser.Login, "registered in.")
 	return nil
-}
-
-func preValidatePassword(password string) error {
-	if len(password) < 8 {
-		return errors.New("password too short")
-	}
-
-	var (
-		hasUpper   = false
-		hasLower   = false
-		hasNumber  = false
-		hasSpecial = false
-	)
-
-	for _, ch := range password {
-		if unicode.IsUpper(ch) {
-			hasUpper = true
-			continue
-		}
-
-		if unicode.IsLower(ch) {
-			hasLower = true
-			continue
-		}
-		if unicode.IsNumber(ch) {
-			hasNumber = true
-			continue
-		}
-
-		if unicode.IsPunct(ch) || unicode.IsSymbol(ch) {
-			hasSpecial = true
-		}
-	}
-
-	if hasNumber && hasSpecial && hasLower && hasUpper {
-		return nil
-	}
-
-	return errors.New("password should contain numbers, upper and lower characters, special characters")
 }
 
 func genSalt(password []byte) []byte {

@@ -35,9 +35,9 @@ func (w *Worker) RegistrationHandler(rw http.ResponseWriter, req *http.Request) 
 		newUser := cmn.User{}
 		newUser.Login = req.FormValue("email")
 		newUser.Password = req.FormValue("psw")
+		newUser.Name = req.FormValue("name")
+		newUser.Surname = req.FormValue("lastname")
 
-		newUser.Name = "Good for name"
-		newUser.Surname = "Good for surname"
 		err = auth.Register(w.dbManager, newUser)
 		if err != nil {
 			fmt.Fprintf(rw, err.Error())

@@ -20,6 +20,7 @@ func main() {
 func routes(mux *http.ServeMux, worker *web.Worker) {
 	mux.HandleFunc("/registration", worker.RegistrationHandler)
 	mux.HandleFunc("/login", worker.LoginHandler)
+	mux.HandleFunc("/gallery", worker.GalleryPage)
 
 	fs := http.FileServer(http.Dir("./web/app/static"))
 	mux.Handle("/static/", http.StripPrefix("/static", fs))

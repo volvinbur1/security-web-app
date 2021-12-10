@@ -6,8 +6,10 @@ import (
 	"github.com/volvinbur1/security-web-app/internal/cmn"
 	"github.com/volvinbur1/security-web-app/internal/db"
 	"github.com/volvinbur1/security-web-app/internal/routing"
+	"html/template"
 	"log"
 	"net/http"
+	"path/filepath"
 )
 
 type Worker struct {
@@ -64,7 +66,31 @@ func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			fmt.Fprintf(rw, err.Error())
 		} else {
-			fmt.Fprintf(rw, "User registered")
+			http.Redirect(rw, req, "/gallery", http.StatusOK)
 		}
+	}
+}
+func (w *Worker) GalleryPage(rw http.ResponseWriter, req *http.Request) {
+	path := filepath.Join("web", "app", "html", "galleryPage.html")
+	tmpl, err := template.ParseFiles(path)
+
+	if err != nil {
+		http.Error(rw, err.Error(), 400)
+		return
+	}
+	type Qwe struct {
+		Name     string
+		Lastname string
+		Phone    string
+	}
+
+	err = tmpl.Execute(rw, Qwe{
+		Name:     "Oleh",
+		Lastname: "Lysenko",
+		Phone:    "380991373939",
+	})
+	if err != nil {
+		http.Error(rw, err.Error(), 400)
+		return
 	}
 }

@@ -63,7 +63,7 @@ func Register(dbMgr *db.Manager, newUser cmn.User) error {
 		return err
 	}
 
-	err = encryptUserData(&newUser)
+	//err = encryptUserData(&newUser)
 	if err != nil {
 		return err
 	}
@@ -101,9 +101,5 @@ func hashPassword(user *cmn.User) error {
 	}
 
 	user.Password = hex.EncodeToString(hash)
-	return nil
-}
-
-func encryptUserData(user *cmn.User) error {
 	return nil
 }

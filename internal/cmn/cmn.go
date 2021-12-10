@@ -7,6 +7,8 @@ type User struct {
 	Surname string `bson:"surname"`
 	Phone   string `bson:"phone"`
 
+	EncryptionKey string `bson:"key"`
+
 	Password string `bson:"pwdhash"`
 	PwdSalt  string `bson:"pwdsalt"`
 }

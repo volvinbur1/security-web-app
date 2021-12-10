@@ -1,4 +1,4 @@
-package web
+package data
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	"github.com/volvinbur1/security-web-app/internal/web/aesgcm"
 )
 
-func getInfoAboutUser(currentUserUid string, dbMgr *db.Manager) (cmn.User, error) {
+func GetInfoAboutUser(currentUserUid string, dbMgr *db.Manager) (cmn.User, error) {
 	users, err := dbMgr.GetUsers()
 	if err != nil {
 		return cmn.User{}, err

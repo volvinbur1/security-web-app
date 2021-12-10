@@ -1,4 +1,4 @@
-package web
+package data
 
 import (
 	"bufio"
@@ -21,7 +21,7 @@ import (
 const saltSize = 16
 const keysFile = "./bin/aes-keys/keys.txt"
 
-func loginUser(dbMgr *db.Manager, loggingUser cmn.User) error {
+func LoginUser(dbMgr *db.Manager, loggingUser cmn.User) error {
 	users, err := dbMgr.GetUsers()
 	if err != nil {
 		return err

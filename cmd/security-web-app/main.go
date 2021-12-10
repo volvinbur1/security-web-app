@@ -22,5 +22,5 @@ func routes(mux *http.ServeMux, worker *web.Worker) {
 	mux.HandleFunc("/login", worker.LoginHandler)
 
 	fs := http.FileServer(http.Dir("./web/app/static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	mux.Handle("/static/", http.StripPrefix("/static", fs))
 }

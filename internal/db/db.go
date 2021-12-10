@@ -89,6 +89,11 @@ func (m *Manager) GetUsers() ([]cmn.User, error) {
 func parseBson(data bson.M) (cmn.User, error) {
 	u := cmn.User{}
 	isOkay := true
+	u.Guid, isOkay = data["guid"].(string)
+	if !isOkay {
+		return cmn.User{}, errors.New("error when parsing bson value `guid`")
+	}
+
 	u.Name, isOkay = data["name"].(string)
 	if !isOkay {
 		return cmn.User{}, errors.New("error when parsing bson value `name`")
@@ -97,6 +102,16 @@ func parseBson(data bson.M) (cmn.User, error) {
 	u.Surname, isOkay = data["surname"].(string)
 	if !isOkay {
 		return cmn.User{}, errors.New("error when parsing bson value `surname`")
+	}
+
+	u.Phone, isOkay = data["phone"].(string)
+	if !isOkay {
+		return cmn.User{}, errors.New("error when parsing bson value `phone`")
+	}
+
+	u.Email, isOkay = data["email"].(string)
+	if !isOkay {
+		return cmn.User{}, errors.New("error when parsing bson value `email`")
 	}
 
 	u.Login, isOkay = data["login"].(string)

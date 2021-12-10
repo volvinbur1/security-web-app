@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="security-web-app" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="security-web-app" />
-    <working_directory value="$PROJECT_DIR$/bin" />
+    <working_directory value="$PROJECT_DIR$/" />
     <kind value="PACKAGE" />
     <package value="github.com/volvinbur1/security-web-app/cmd/security-web-app/" />
     <directory value="$PROJECT_DIR$" />

@@ -1,4 +1,4 @@
-package pages
+package routing
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ type RegisterStruct struct {
 }
 
 func LoginPage(rw http.ResponseWriter, req *http.Request) {
-	path := filepath.Join("web/app", "html", "loginPage.html")
+	path := filepath.Join("web", "app", "html", "loginPage.html")
 
 	tmpl, err := template.ParseFiles(path)
 	if err != nil {
@@ -31,7 +31,7 @@ func LoginPage(rw http.ResponseWriter, req *http.Request) {
 }
 func RegisterPage(rw http.ResponseWriter, req *http.Request) {
 
-	path := filepath.Join("web/app", "html", "registerPage.html")
+	path := filepath.Join("web", "app", "html", "registerPage.html")
 
 	tmpl, err := template.ParseFiles(path)
 

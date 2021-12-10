@@ -11,7 +11,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"os"
-	"unicode"
 )
 
 const saltSize = 16
@@ -52,10 +51,10 @@ func Register(dbMgr *db.Manager, newUser cmn.User) error {
 		}
 	}
 
-	err = preValidatePassword(newUser.Password)
-	if err != nil {
-		return err
-	}
+	//err = preValidatePassword(newUser.Password)
+	//if err != nil {
+	//	return err
+	//}
 
 	newUser.PwdSalt = hex.EncodeToString(genSalt([]byte(newUser.Password)))
 	newUser.Password = newUser.PwdSalt + newUser.Password
@@ -66,45 +65,6 @@ func Register(dbMgr *db.Manager, newUser cmn.User) error {
 
 	newUser.Password = hex.EncodeToString(hash)
 	return dbMgr.AddUser(newUser)
-}
-
-func preValidatePassword(password string) error {
-	if len(password) < 8 {
-		return errors.New("password too short")
-	}
-
-	var (
-		hasUpper   = false
-		hasLower   = false
-		hasNumber  = false
-		hasSpecial = false
-	)
-
-	for _, ch := range password {
-		if unicode.IsUpper(ch) {
-			hasUpper = true
-			continue
-		}
-
-		if unicode.IsLower(ch) {
-			hasLower = true
-			continue
-		}
-		if unicode.IsNumber(ch) {
-			hasNumber = true
-			continue
-		}
-
-		if unicode.IsPunct(ch) || unicode.IsSymbol(ch) {
-			hasSpecial = true
-		}
-	}
-
-	if hasNumber && hasSpecial && hasLower && hasUpper {
-		return nil
-	}
-
-	return errors.New("password should contain numbers, upper and lower characters, special characters")
 }
 
 func genSalt(password []byte) []byte {

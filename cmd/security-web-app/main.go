@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/volvinbur1/security-web-app/internal/routing"
+	"github.com/volvinbur1/security-web-app/internal/web"
 	"log"
 	"net/http"
 )
 
 func main() {
+	webWorker := web.NewWorker()
 	router := http.NewServeMux()
-	routes(router)
+	routes(router, webWorker)
 
 	err := http.ListenAndServe(":8080", router)
 	if err != nil {
@@ -16,9 +17,9 @@ func main() {
 	}
 }
 
-func routes(mux *http.ServeMux) {
-	mux.HandleFunc("/registration", routing.RegisterPage)
-	mux.HandleFunc("/login", routing.LoginPage)
+func routes(mux *http.ServeMux, worker *web.Worker) {
+	mux.HandleFunc("/registration", worker.RegistrationHandler)
+	mux.HandleFunc("/login", worker.LoginHandler)
 
 	fs := http.FileServer(http.Dir("./web/app/static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))

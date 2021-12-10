@@ -23,29 +23,29 @@ const saltSize = 16
 const keysFilePath = "./bin/aes-keys"
 const keysFile = "keys.txt"
 
-func LoginUser(dbMgr *db.Manager, loggingUser cmn.User) error {
+func LoginUser(dbMgr *db.Manager, loggingUser cmn.User) (string, error) {
 	users, err := dbMgr.GetUsers()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	for _, u := range users {
 		if u.Login == loggingUser.Login {
 			pwdBytes, err := hex.DecodeString(u.Password)
 			if err != nil {
-				return err
+				return "", err
 			}
 
 			if bcrypt.CompareHashAndPassword(pwdBytes, []byte(u.PwdSalt+loggingUser.Login)) != nil {
-				return errors.New("password incorrect")
+				return "", errors.New("password incorrect")
 			}
 
 			log.Println(loggingUser.Login, "logged in.")
-			return nil
+			return loggingUser.Guid, nil
 		}
 	}
 
-	return errors.New("user not registered")
+	return "", errors.New("user not registered")
 }
 
 func Register(newUser cmn.User, dbMgr *db.Manager) (string, error) {

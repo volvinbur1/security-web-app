@@ -5,7 +5,6 @@ import (
 	"github.com/volvinbur1/security-web-app/internal/cmn"
 	"github.com/volvinbur1/security-web-app/internal/db"
 	"github.com/volvinbur1/security-web-app/internal/routing"
-	"github.com/volvinbur1/security-web-app/internal/web/auth"
 	"log"
 	"net/http"
 )
@@ -38,7 +37,7 @@ func (w *Worker) RegistrationHandler(rw http.ResponseWriter, req *http.Request) 
 		newUser.Name = req.FormValue("name")
 		newUser.Surname = req.FormValue("lastname")
 
-		err = auth.Register(w.dbManager, newUser)
+		err = Register(w.dbManager, newUser)
 		if err != nil {
 			fmt.Fprintf(rw, err.Error())
 		} else {
@@ -60,7 +59,7 @@ func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) {
 		loggingUser.Login = req.FormValue("email")
 		loggingUser.Password = req.FormValue("psw")
 
-		err = auth.LoginUser(w.dbManager, loggingUser)
+		err = loginUser(w.dbManager, loggingUser)
 		if err != nil {
 			fmt.Fprintf(rw, err.Error())
 		} else {

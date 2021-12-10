@@ -1,4 +1,4 @@
-package auth
+package aesgcm
 
 import (
 	"crypto/aes"
@@ -10,29 +10,29 @@ import (
 
 const keySize = 32
 
-func EncryptUserData(data string) (string, string, error) {
-	key, err := genKey()
+func EncryptUserData(data, keyStr string) (string, error) {
+	key, err := hex.DecodeString(keyStr)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	aesGcm, err := cipher.NewGCM(block)
 	if err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	nonce := make([]byte, aesGcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	enc := aesGcm.Seal(nonce, nonce, []byte(data), nil)
-	return hex.EncodeToString(enc), hex.EncodeToString(key), nil
+	return hex.EncodeToString(enc), nil
 }
 
 func DecryptData(encStr, keyStr string) (string, error) {
@@ -64,11 +64,11 @@ func DecryptData(encStr, keyStr string) (string, error) {
 	return string(plaintext), nil
 }
 
-func genKey() ([]byte, error) {
+func GenerateUniqueKey() (string, error) {
 	key := make([]byte, keySize)
 	if _, err := io.ReadFull(rand.Reader, key); err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return key, nil
+	return hex.EncodeToString(key), nil
 }

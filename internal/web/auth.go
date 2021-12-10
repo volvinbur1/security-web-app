@@ -1,4 +1,4 @@
-package auth
+package web
 
 import (
 	"crypto/rand"
@@ -6,8 +6,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/volvinbur1/security-web-app/internal/cmn"
 	"github.com/volvinbur1/security-web-app/internal/db"
+	"github.com/volvinbur1/security-web-app/internal/web/aesgcm"
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"log"
@@ -15,8 +17,9 @@ import (
 )
 
 const saltSize = 16
+const keysFile = "./bin/aes-keys/keys.txt"
 
-func LoginUser(dbMgr *db.Manager, loggingUser cmn.User) error {
+func loginUser(dbMgr *db.Manager, loggingUser cmn.User) error {
 	users, err := dbMgr.GetUsers()
 	if err != nil {
 		return err
@@ -53,17 +56,13 @@ func Register(dbMgr *db.Manager, newUser cmn.User) error {
 		}
 	}
 
-	//err = preValidatePassword(newUser.Password)
-	//if err != nil {
-	//	return err
-	//}
-
+	newUser.Guid = uuid.New().String()
 	err = hashPassword(&newUser)
 	if err != nil {
 		return err
 	}
 
-	//err = encryptUserData(&newUser)
+	err = encryptUserData(&newUser)
 	if err != nil {
 		return err
 	}
@@ -101,5 +100,52 @@ func hashPassword(user *cmn.User) error {
 	}
 
 	user.Password = hex.EncodeToString(hash)
+	return nil
+}
+
+func encryptUserData(user *cmn.User) error {
+	key, err := aesgcm.GenerateUniqueKey()
+	if err != nil {
+		return err
+	}
+
+	err = storeUserKey(user.Guid, key)
+	if err != nil {
+		return err
+	}
+
+	user.Surname, err = aesgcm.EncryptUserData(user.Surname, key)
+	if err != nil {
+		return err
+	}
+
+	user.Phone, err = aesgcm.EncryptUserData(user.Phone, key)
+	if err != nil {
+		return err
+	}
+
+	user.Email, err = aesgcm.EncryptUserData(user.Email, key)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func storeUserKey(guid, key string) error {
+	err := os.MkdirAll(keysFile, 0600)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile(keysFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	if _, err = f.WriteString(guid + ";" + key); err != nil {
+		return err
+	}
 	return nil
 }

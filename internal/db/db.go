@@ -45,10 +45,12 @@ func (m *Manager) AddUser(user cmn.User) error {
 
 	ctx, ctxCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer ctxCancel()
-	_, err := authTable.InsertOne(ctx, bson.D{{Key: "login", Value: user.Login},
-		{Key: "name", Value: user.Name}, {Key: "surname", Value: user.Surname},
-		{Key: "pwdhash", Value: user.Password}, {Key: "pwdsalt", Value: user.PwdSalt},
-	})
+	_, err := authTable.InsertOne(ctx, user)
+
+	//	bson.D{
+	//	{Key: "login", Value: user.Login}, {Key: "name", Value: user.Name}, {Key: "surname", Value: user.Surname},
+	//	{Key: "pwdhash", Value: user.Password}, {Key: "pwdsalt", Value: user.PwdSalt},
+	//})
 	if err != nil {
 		return err
 	}

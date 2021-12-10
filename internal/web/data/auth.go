@@ -15,11 +15,13 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
 const saltSize = 16
-const keysFile = "./bin/aes-keys/keys.txt"
+const keysFilePath = "./bin/aes-keys"
+const keysFile = "keys.txt"
 
 func LoginUser(dbMgr *db.Manager, loggingUser cmn.User) error {
 	users, err := dbMgr.GetUsers()
@@ -46,36 +48,36 @@ func LoginUser(dbMgr *db.Manager, loggingUser cmn.User) error {
 	return errors.New("user not registered")
 }
 
-func Register(dbMgr *db.Manager, newUser cmn.User) error {
+func Register(newUser cmn.User, dbMgr *db.Manager) (string, error) {
 	users, err := dbMgr.GetUsers()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	for _, user := range users {
 		if user.Login == newUser.Login {
-			return errors.New("user already registered")
+			return "", errors.New("user already registered")
 		}
 	}
 
 	newUser.Guid = uuid.New().String()
 	err = hashPassword(&newUser)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	err = encryptUserData(&newUser)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	err = dbMgr.AddUser(newUser)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	log.Println(newUser.Login, "registered in.")
-	return nil
+	return newUser.Guid, nil
 }
 
 func genSalt(password []byte) []byte {
@@ -135,31 +137,32 @@ func encryptUserData(user *cmn.User) error {
 }
 
 func storeUserKey(guid, key string) error {
-	err := os.MkdirAll(keysFile, 0600)
+	err := os.MkdirAll(keysFilePath, 0600)
 	if err != nil {
 		return err
 	}
 
-	f, err := os.OpenFile(keysFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(filepath.Join(keysFilePath, keysFile), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	if _, err = f.WriteString(guid + ";" + key); err != nil {
+	if _, err = f.WriteString(guid + ";" + key + "\n"); err != nil {
 		return err
 	}
 	return nil
 }
 
 func getUserKey(guid string) (string, error) {
-	f, err := os.OpenFile(keysFile, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.Open(filepath.Join(keysFilePath, keysFile))
 	if err != nil {
 		return "", err
 	}
 	defer f.Close()
 
 	scanner := bufio.NewScanner(f)
+	scanner.Split(bufio.ScanLines)
 	for scanner.Scan() {
 		scannedGuid := strings.Split(scanner.Text(), ";")[0]
 		if scannedGuid != guid {

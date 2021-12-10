@@ -38,7 +38,7 @@ func (w *Worker) RegistrationHandler(rw http.ResponseWriter, req *http.Request) 
 		newUser.Name = req.FormValue("name")
 		newUser.Surname = req.FormValue("lastname")
 
-		err = data.Register(w.dbManager, newUser)
+		_, err = data.Register(newUser, w.dbManager)
 		if err != nil {
 			fmt.Fprintf(rw, err.Error())
 		} else {

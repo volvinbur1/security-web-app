@@ -15,7 +15,7 @@ func main() {
 	router := http.NewServeMux()
 	routes(router, webWorker)
 
-	err := http.ListenAndServe(":8080", router)
+	err := http.ListenAndServeTLS(":446", "certificate/localhost.crt", "certificate/localhost.key", router)
 	if err != nil {
 		log.Fatal(err)
 	}

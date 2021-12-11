@@ -32,9 +32,11 @@ func (w *Worker) CompleteRegistration(req *http.Request) error {
 	newUser.Login = req.FormValue("email")
 	newUser.Password = req.FormValue("psw")
 	newUser.Name = req.FormValue("name")
-  newUser.Surname = req.FormValue("lastname")
-                                  
-	return auth.Register(w.dbManager, newUser)
+	newUser.Surname = req.FormValue("lastname")
+
+	guid, err := data.Register(newUser, w.dbManager)
+	w.currentUserGuid = guid
+	return err
 }
 
 func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) bool {
@@ -50,10 +52,11 @@ func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) bool {
 		loggingUser.Login = req.FormValue("email")
 		loggingUser.Password = req.FormValue("psw")
 
-		err = data.LoginUser(w.dbManager, loggingUser)
+		guid, err := data.LoginUser(w.dbManager, loggingUser)
 		if err != nil {
 			fmt.Fprintf(rw, err.Error())
 		} else {
+			w.currentUserGuid = guid
 			return true
 		}
 	}

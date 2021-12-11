@@ -14,6 +14,8 @@ import (
 
 type Worker struct {
 	dbManager *db.Manager
+
+	currentUserGuid string
 }
 
 func NewWorker() *Worker {
@@ -25,32 +27,17 @@ func (w *Worker) Stop() {
 	w.dbManager.Disconnect()
 }
 
-func (w *Worker) RegistrationHandler(rw http.ResponseWriter, req *http.Request) {
-	routing.RegisterPage(rw, req)
+func (w *Worker) CompleteRegistration(req *http.Request) error {
+	newUser := cmn.User{}
+	newUser.Login = req.FormValue("email")
+	newUser.Password = req.FormValue("psw")
+	newUser.Name = req.FormValue("name")
+	newUser.Surname = req.FormValue("lastname")
 
-	if req.Method == "POST" {
-		err := req.ParseForm()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		newUser := cmn.User{}
-		newUser.Login = req.FormValue("email")
-		newUser.Password = req.FormValue("psw")
-		newUser.Name = req.FormValue("name")
-		newUser.Surname = req.FormValue("lastname")
-
-		err = auth.Register(w.dbManager, newUser)
-		if err != nil {
-			fmt.Fprintf(rw, err.Error())
-		} else {
-			//fmt.Fprintf(rw, "User registered")
-			http.Redirect(rw, req, "/login", 301)
-		}
-	}
+	return auth.Register(w.dbManager, newUser)
 }
 
-func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) {
+func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) bool {
 	routing.LoginPage(rw, req)
 
 	if req.Method == "POST" {
@@ -67,9 +54,11 @@ func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			fmt.Fprintf(rw, err.Error())
 		} else {
-			//http.Redirect(rw, req, "/gallery", http.StatusMovedPermanently)
+			return true
 		}
 	}
+
+	return false
 }
 func (w *Worker) GalleryHandler(rw http.ResponseWriter, req *http.Request) {
 	path := filepath.Join("web", "app", "html", "galleryPage.html")

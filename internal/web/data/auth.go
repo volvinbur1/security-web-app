@@ -41,7 +41,7 @@ func LoginUser(dbMgr *db.Manager, loggingUser cmn.User) (string, error) {
 			}
 
 			log.Println(loggingUser.Login, "logged in.")
-			return loggingUser.Guid, nil
+			return u.Guid, nil
 		}
 	}
 

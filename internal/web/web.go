@@ -33,6 +33,7 @@ func (w *Worker) CompleteRegistration(req *http.Request) error {
 	newUser.Password = req.FormValue("psw")
 	newUser.Name = req.FormValue("name")
 	newUser.Surname = req.FormValue("lastname")
+	newUser.Phone = req.FormValue("phone")
 
 	guid, err := data.Register(newUser, w.dbManager)
 	w.currentUserGuid = guid
@@ -72,17 +73,11 @@ func (w *Worker) GalleryHandler(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	type Qwe struct {
-		Name     string
-		Lastname string
-		Phone    string
+	userInfo, err := data.GetInfoAboutUser(w.currentUserGuid, w.dbManager)
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	err = tmpl.Execute(rw, Qwe{
-		Name:     "Oleh",
-		Lastname: "Lysenko",
-		Phone:    "380991373939",
-	})
+	err = tmpl.Execute(rw, userInfo)
 	if err != nil {
 		http.Error(rw, err.Error(), 400)
 		return

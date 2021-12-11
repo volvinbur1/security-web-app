@@ -22,7 +22,7 @@ func LoginPage(rw http.ResponseWriter, req *http.Request) {
 	}
 
 }
-func RegisterPage(rw http.ResponseWriter, req *http.Request) {
+func RegisterPage(rw http.ResponseWriter) {
 	path := filepath.Join("web", "app", "html", "registerPage.html")
 	tmpl, err := template.ParseFiles(path)
 

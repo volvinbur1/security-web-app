@@ -6,12 +6,16 @@ import (
 	"github.com/volvinbur1/security-web-app/internal/db"
 	"github.com/volvinbur1/security-web-app/internal/routing"
 	"github.com/volvinbur1/security-web-app/internal/web/data"
+	"html/template"
 	"log"
 	"net/http"
+	"path/filepath"
 )
 
 type Worker struct {
 	dbManager *db.Manager
+
+	currentUserGuid string
 }
 
 func NewWorker() *Worker {
@@ -23,31 +27,17 @@ func (w *Worker) Stop() {
 	w.dbManager.Disconnect()
 }
 
-func (w *Worker) RegistrationHandler(rw http.ResponseWriter, req *http.Request) {
-	routing.RegisterPage(rw, req)
-
-	if req.Method == "POST" {
-		err := req.ParseForm()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		newUser := cmn.User{}
-		newUser.Login = req.FormValue("email")
-		newUser.Password = req.FormValue("psw")
-		newUser.Name = req.FormValue("name")
-		newUser.Surname = req.FormValue("lastname")
-
-		_, err = data.Register(newUser, w.dbManager)
-		if err != nil {
-			fmt.Fprintf(rw, err.Error())
-		} else {
-			fmt.Fprintf(rw, "User registered")
-		}
-	}
+func (w *Worker) CompleteRegistration(req *http.Request) error {
+	newUser := cmn.User{}
+	newUser.Login = req.FormValue("email")
+	newUser.Password = req.FormValue("psw")
+	newUser.Name = req.FormValue("name")
+  newUser.Surname = req.FormValue("lastname")
+                                  
+	return auth.Register(w.dbManager, newUser)
 }
 
-func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) {
+func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) bool {
 	routing.LoginPage(rw, req)
 
 	if req.Method == "POST" {
@@ -64,7 +54,34 @@ func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			fmt.Fprintf(rw, err.Error())
 		} else {
-			fmt.Fprintf(rw, "User registered")
+			return true
 		}
+	}
+
+	return false
+}
+func (w *Worker) GalleryHandler(rw http.ResponseWriter, req *http.Request) {
+	path := filepath.Join("web", "app", "html", "galleryPage.html")
+	tmpl, err := template.ParseFiles(path)
+
+	if err != nil {
+		http.Error(rw, err.Error(), 400)
+		return
+	}
+
+	type Qwe struct {
+		Name     string
+		Lastname string
+		Phone    string
+	}
+
+	err = tmpl.Execute(rw, Qwe{
+		Name:     "Oleh",
+		Lastname: "Lysenko",
+		Phone:    "380991373939",
+	})
+	if err != nil {
+		http.Error(rw, err.Error(), 400)
+		return
 	}
 }

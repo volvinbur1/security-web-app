@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../static/css/galleryPage.css">
+</head>
+<body>
+<h1>Gallery</h1>
+<div class="container">
+    <img src="../static/img/01_scandaly_jivopis.jpg"  alt= "Mono">
+    <p>Author<output name="email"> {{.Name}} {{.Lastname}} </output> </p>
+    <div style="text-align:center">
+        <button id="buttonId">Show phone Number</button>
+        <p id="phoneNumId"> {{.Phone}} </p>
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+    var button = document.getElementById('buttonId');
+    button.addEventListener('click', hideshow, false);
+
+    function hideshow() {
+        document.getElementById('phoneNumId').style.display = 'block';
+        this.style.display = 'none';
+    }
+</script>
+</html>

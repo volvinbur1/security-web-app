@@ -2,10 +2,10 @@ package web
 
 import (
 	"fmt"
-	"github.com/volvinbur1/security-web-app/internal/auth"
 	"github.com/volvinbur1/security-web-app/internal/cmn"
 	"github.com/volvinbur1/security-web-app/internal/db"
 	"github.com/volvinbur1/security-web-app/internal/routing"
+	"github.com/volvinbur1/security-web-app/internal/web/data"
 	"html/template"
 	"log"
 	"net/http"
@@ -32,8 +32,8 @@ func (w *Worker) CompleteRegistration(req *http.Request) error {
 	newUser.Login = req.FormValue("email")
 	newUser.Password = req.FormValue("psw")
 	newUser.Name = req.FormValue("name")
-	newUser.Surname = req.FormValue("lastname")
-
+  newUser.Surname = req.FormValue("lastname")
+                                  
 	return auth.Register(w.dbManager, newUser)
 }
 
@@ -50,7 +50,7 @@ func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) bool {
 		loggingUser.Login = req.FormValue("email")
 		loggingUser.Password = req.FormValue("psw")
 
-		err = auth.LoginUser(w.dbManager, loggingUser)
+		err = data.LoginUser(w.dbManager, loggingUser)
 		if err != nil {
 			fmt.Fprintf(rw, err.Error())
 		} else {

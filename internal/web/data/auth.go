@@ -36,12 +36,12 @@ func LoginUser(dbMgr *db.Manager, loggingUser cmn.User) (string, error) {
 				return "", err
 			}
 
-			if bcrypt.CompareHashAndPassword(pwdBytes, []byte(u.PwdSalt+loggingUser.Login)) != nil {
+			if bcrypt.CompareHashAndPassword(pwdBytes, []byte(loggingUser.Password)) != nil {
 				return "", errors.New("password incorrect")
 			}
 
 			log.Println(loggingUser.Login, "logged in.")
-			return loggingUser.Guid, nil
+			return u.Guid, nil
 		}
 	}
 
@@ -96,8 +96,6 @@ func genSalt(password []byte) []byte {
 }
 
 func hashPassword(user *cmn.User) error {
-	user.PwdSalt = hex.EncodeToString(genSalt([]byte(user.Password)))
-	user.Password = user.PwdSalt + user.Password
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	if err != nil {
 		return err

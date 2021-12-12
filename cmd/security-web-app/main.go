@@ -23,11 +23,7 @@ func main() {
 
 func routes(mux *http.ServeMux, worker *web.Worker) {
 	mux.HandleFunc("/registration", RegistrationHandler)
-	mux.HandleFunc("/login", func(writer http.ResponseWriter, request *http.Request) {
-		if worker.LoginHandler(writer, request) {
-			http.Redirect(writer, request, "/gallery", 301)
-		}
-	})
+	mux.HandleFunc("/login", LoginUser)
 	mux.HandleFunc("/gallery", worker.GalleryHandler)
 
 	fs := http.FileServer(http.Dir("./web/app/static"))
@@ -49,6 +45,27 @@ func RegistrationHandler(rw http.ResponseWriter, req *http.Request) {
 		err = webWorker.CompleteRegistration(req)
 		if err != nil {
 			log.Print(err)
+			fmt.Fprintf(rw, err.Error())
+		} else {
+			http.Redirect(rw, req, "/gallery", 301)
+		}
+	}
+}
+
+func LoginUser(rw http.ResponseWriter, req *http.Request) {
+	if req.Method == http.MethodGet {
+		routing.LoginPage(rw)
+		return
+	}
+
+	if req.Method == http.MethodPost {
+		err := req.ParseForm()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = webWorker.CompleteLogin(req)
+		if err != nil {
 			fmt.Fprintf(rw, err.Error())
 		} else {
 			http.Redirect(rw, req, "/gallery", 301)

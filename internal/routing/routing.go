@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-func LoginPage(rw http.ResponseWriter, req *http.Request) {
+func LoginPage(rw http.ResponseWriter) {
 	path := filepath.Join("web", "app", "html", "loginPage.html")
 
 	tmpl, err := template.ParseFiles(path)

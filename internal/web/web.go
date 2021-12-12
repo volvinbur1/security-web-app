@@ -1,10 +1,8 @@
 package web
 
 import (
-	"fmt"
 	"github.com/volvinbur1/security-web-app/internal/cmn"
 	"github.com/volvinbur1/security-web-app/internal/db"
-	"github.com/volvinbur1/security-web-app/internal/routing"
 	"github.com/volvinbur1/security-web-app/internal/web/data"
 	"html/template"
 	"log"
@@ -33,36 +31,23 @@ func (w *Worker) CompleteRegistration(req *http.Request) error {
 	newUser.Password = req.FormValue("psw")
 	newUser.Name = req.FormValue("name")
 	newUser.Surname = req.FormValue("lastname")
+	newUser.Phone = req.FormValue("phone")
 
 	guid, err := data.Register(newUser, w.dbManager)
 	w.currentUserGuid = guid
 	return err
 }
 
-func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) bool {
-	routing.LoginPage(rw, req)
+func (w *Worker) CompleteLogin(req *http.Request) error {
+	loggingUser := cmn.User{}
+	loggingUser.Login = req.FormValue("email")
+	loggingUser.Password = req.FormValue("psw")
 
-	if req.Method == "POST" {
-		err := req.ParseForm()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		loggingUser := cmn.User{}
-		loggingUser.Login = req.FormValue("email")
-		loggingUser.Password = req.FormValue("psw")
-
-		guid, err := data.LoginUser(w.dbManager, loggingUser)
-		if err != nil {
-			fmt.Fprintf(rw, err.Error())
-		} else {
-			w.currentUserGuid = guid
-			return true
-		}
-	}
-
-	return false
+	guid, err := data.LoginUser(w.dbManager, loggingUser)
+	w.currentUserGuid = guid
+	return err
 }
+
 func (w *Worker) GalleryHandler(rw http.ResponseWriter, req *http.Request) {
 	path := filepath.Join("web", "app", "html", "galleryPage.html")
 	tmpl, err := template.ParseFiles(path)
@@ -72,17 +57,11 @@ func (w *Worker) GalleryHandler(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	type Qwe struct {
-		Name     string
-		Lastname string
-		Phone    string
+	userInfo, err := data.GetInfoAboutUser(w.currentUserGuid, w.dbManager)
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	err = tmpl.Execute(rw, Qwe{
-		Name:     "Oleh",
-		Lastname: "Lysenko",
-		Phone:    "380991373939",
-	})
+	err = tmpl.Execute(rw, userInfo)
 	if err != nil {
 		http.Error(rw, err.Error(), 400)
 		return

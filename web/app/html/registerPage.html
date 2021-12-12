@@ -4,21 +4,7 @@
     <meta charset="UTF-8">
     <title>Title</title>
   <link rel="stylesheet" href="../static/css/registerPage.css">
-    <script>
-        const password = document.getElementById("psw")
-            , confirm_password = document.getElementById("psw-repeat");
-
-        function validatePassword(){
-            if(password.value !== confirm_password.value) {
-                confirm_password.setCustomValidity("Passwords Don't Match");
-            } else {
-                confirm_password.setCustomValidity('');
-            }
-        }
-
-        password.onchange = validatePassword;
-        confirm_password.onkeyup = validatePassword;
-    </script>
+  <link rel="script" href="../static/script/script.js">
 </head>
 <body>
 <form method="post">
@@ -28,16 +14,20 @@
     <hr>
 
     <label for="email"><b>Email</b></label>
-    <input type="text" placeholder="Enter Email" name="email" id="email" required>
+    <input type="text" placeholder="Enter Email" name="email" id="email"
+           pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" required>
 
     <label for="name"><b>Name</b></label>
-    <input type="text" placeholder="Enter Your Name" name="name" id="name" required>
+    <input type="text" placeholder="Enter Your Name" name="name" id="name"
+           pattern="[A-Za-z]{1,32}" required>
 
     <label for="lastname"><b>Lastname</b></label>
-    <input type="text" placeholder="Enter Your Lastname" name="lastname" id="lastname" required>
+    <input type="text" placeholder="Enter Your Lastname" name="lastname" id="lastname"
+           pattern="[A-Za-z]{1,32}" required>
 
     <label for="phone"><b>Phone Number</b></label>
-    <input type="text" placeholder="Enter Phone Number" name="phone" id="phone" required>
+    <input type="text" placeholder="Enter Phone Number" name="phone" id="phone"
+           pattern="{12,}" required>
 
     <label for="psw"><b>Password</b></label>
     <input type="password" placeholder="Enter Password" name="psw" id="psw"

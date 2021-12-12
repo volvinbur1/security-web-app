@@ -10,5 +10,4 @@ type User struct {
 
 	Login    string `bson:"login,omitempty"`
 	Password string `bson:"pwdhash,omitempty"`
-	PwdSalt  string `bson:"pwdsalt,omitempty"`
 }

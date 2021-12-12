@@ -124,10 +124,5 @@ func parseBson(data bson.M) (cmn.User, error) {
 		return cmn.User{}, errors.New("error when parsing bson value `pwdhash`")
 	}
 
-	u.PwdSalt, isOkay = data["pwdsalt"].(string)
-	if !isOkay {
-		return cmn.User{}, errors.New("error when parsing bson value `pwdsalt`")
-	}
-
 	return u, nil
 }

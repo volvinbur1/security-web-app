@@ -64,7 +64,7 @@ func (w *Worker) LoginHandler(rw http.ResponseWriter, req *http.Request) {
 		if err != nil {
 			fmt.Fprintf(rw, err.Error())
 		} else {
-			fmt.Fprintf(rw, "User registered")
+			fmt.Fprintf(rw, "User logged in")
 		}
 	}
 }

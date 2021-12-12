@@ -8,5 +8,4 @@ type User struct {
 	Phone   string `bson:"phone"`
 
 	Password string `bson:"pwdhash"`
-	PwdSalt  string `bson:"pwdsalt"`
 }

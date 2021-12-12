@@ -23,12 +23,12 @@ func LoginUser(dbMgr *db.Manager, loggingUser cmn.User) error {
 
 	for _, user := range users {
 		if user.Login == loggingUser.Login {
-			pwdBytes, err := hex.DecodeString(user.Password)
+			pwd, err := hex.DecodeString(user.Password)
 			if err != nil {
 				return err
 			}
 
-			if bcrypt.CompareHashAndPassword(pwdBytes, []byte(user.PwdSalt+loggingUser.Login)) != nil {
+			if bcrypt.CompareHashAndPassword(pwd, []byte(loggingUser.Password)) != nil {
 				return errors.New("password incorrect")
 			}
 
@@ -56,8 +56,6 @@ func Register(dbMgr *db.Manager, newUser cmn.User) error {
 	//	return err
 	//}
 
-	newUser.PwdSalt = hex.EncodeToString(genSalt([]byte(newUser.Password)))
-	newUser.Password = newUser.PwdSalt + newUser.Password
 	hash, err := bcrypt.GenerateFromPassword([]byte(newUser.Password), 10)
 	if err != nil {
 		return err

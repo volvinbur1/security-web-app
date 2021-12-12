@@ -47,7 +47,7 @@ func (m *Manager) AddUser(user cmn.User) error {
 	defer ctxCancel()
 	_, err := authTable.InsertOne(ctx, bson.D{{Key: "login", Value: user.Login},
 		{Key: "name", Value: user.Name}, {Key: "surname", Value: user.Surname},
-		{Key: "pwdhash", Value: user.Password}, {Key: "pwdsalt", Value: user.PwdSalt},
+		{Key: "pwdhash", Value: user.Password},
 	})
 	if err != nil {
 		return err
@@ -105,11 +105,6 @@ func parseBson(data bson.M) (cmn.User, error) {
 	u.Password, isOkay = data["pwdhash"].(string)
 	if !isOkay {
 		return cmn.User{}, errors.New("error when parsing bson value `pwdhash`")
-	}
-
-	u.PwdSalt, isOkay = data["pwdsalt"].(string)
-	if !isOkay {
-		return cmn.User{}, errors.New("error when parsing bson value `pwdsalt`")
 	}
 
 	return u, nil
